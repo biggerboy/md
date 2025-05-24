@@ -23,8 +23,9 @@ import {
   formatDoc,
   sanitizeTitle,
 } from '@/utils'
-import { initRenderer } from '@/utils/renderer'
+import { copyPlain } from '@/utils/clipboard'
 
+import { initRenderer } from '@/utils/renderer'
 import CodeMirror from 'codemirror'
 import DOMPurify from 'dompurify'
 import { toPng } from 'html-to-image'
@@ -361,7 +362,9 @@ export const useStore = defineStore(`store`, () => {
 
     outputTemp = div.innerHTML
 
-    outputTemp = DOMPurify.sanitize(outputTemp)
+    outputTemp = DOMPurify.sanitize(outputTemp, {
+      ADD_TAGS: ['mp-common-profile'],
+    })
 
     // 阅读时间及字数统计
     outputTemp = renderer.buildReadingTime(readingTimeResult) + outputTemp
@@ -636,15 +639,8 @@ export const useStore = defineStore(`store`, () => {
   }
 
   const copyToClipboard = async () => {
-    try {
-      const selectedText = editor.value!.getSelection()
-      if (selectedText) {
-        await navigator.clipboard.writeText(selectedText)
-      }
-    }
-    catch (error) {
-      console.log(`复制失败`, error)
-    }
+    const selectedText = editor.value!.getSelection()
+    copyPlain(selectedText)
   }
 
   const pasteFromClipboard = async () => {
